@@ -204,6 +204,28 @@ public class AdvancedSortExperiment {
         for(int i=0; i<n; i++) a[i] = r.nextInt(10); return a;
     }
 
+    /**
+     * Calculates the expected number of comparisons for quicksort on a random array of size n.
+     * Uses the formula: 2 * n * ln(n) ≈ 1.386 * n * log2(n), optimized for integer computation.
+     * This is a probabilistic optimization based on average-case analysis.
+     */
+    public static long expectedComparisonsQuicksort(int n) {
+        if (n <= 1) return 0;
+        // Optimized: use natural log and scale to avoid floating point
+        double lnN = Math.log(n);
+        return (long) (2.0 * n * lnN);
+    }
+
+    /**
+     * Optimized version using integer approximation for better performance.
+     */
+    public static long expectedComparisonsQuicksortOptimized(int n) {
+        if (n <= 1) return 0;
+        // Approximation: 2n ln n ≈ 1.386 n log2 n, computed with bit shifts for speed
+        int log2N = 31 - Integer.numberOfLeadingZeros(n);
+        return (long) (1.386 * n * log2N);
+    }
+
     // --- MAIN EXPERIMENT RUNNER ---
     /**
      * The main entry point for the sorting experiment. It sets up the test parameters,
@@ -250,6 +272,13 @@ public class AdvancedSortExperiment {
                 System.out.printf("%-12s %-12s %-12.2f %-15s %-12s%n", 
                     String.format("%,d", n), alg.getName(), avgTime, String.format("%,d", totalComp/5), swapDisplay);
             }
+        }
+
+        // Print expected comparisons for Quicksort
+        System.out.println("\nExpected Comparisons for Quicksort (Probabilistic Analysis):");
+        for (int n : sizes) {
+            long expected = expectedComparisonsQuicksortOptimized(n);
+            System.out.printf("Size %,d: %,d expected comparisons%n", n, expected);
         }
 
         // Print the final summary of expected outcomes.

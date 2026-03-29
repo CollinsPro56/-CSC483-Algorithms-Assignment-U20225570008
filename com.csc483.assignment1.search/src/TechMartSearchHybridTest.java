@@ -167,6 +167,9 @@ public class TechMartSearchHybridTest {
 
     /* Measures the time taken to perform a name-based search using the HybridProductManager. */
     private static long measureName(String targetName, HybridProductManager manager) {
+        if (manager == null || targetName == null || targetName.trim().isEmpty()) {
+            return 0;
+        }
         long start = System.nanoTime();
         manager.searchByName(targetName);
         return System.nanoTime() - start;

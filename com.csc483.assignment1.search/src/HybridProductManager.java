@@ -1,5 +1,9 @@
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Manages products using a hybrid data structure approach.
@@ -16,7 +20,7 @@ public class HybridProductManager {
      * elements to make space, resulting in an O(n) time complexity for insertion. */
     public Product[] addProduct(Product[] currentArray, int currentSize, Product newProduct) {
         // 1. Update the secondary index (name-based HashMap) for O(1) name lookups.
-        nameIndex.put(newProduct.getProductName(), newProduct);
+        nameIndex.put(normalize(newProduct.getProductName()), newProduct);
 
         // 2. Find the correct insertion point for the new product using binary search logic.
         // This operation has a time complexity of O(log n).
@@ -47,11 +51,46 @@ public class HybridProductManager {
     }
 
     /**
-     * Searches for a product by its name using the auxiliary name index.
-     * This provides a very fast O(1) average-case time complexity for lookups.
-     *
+     * Searches for a product by its name using a normalized hash index and tokenized fallback.
+     * This provides fast lookups plus smooth partial name matching.
      */
     public Product searchByName(String name) {
-        return nameIndex.get(name);
+        if (name == null || name.trim().isEmpty() || nameIndex.isEmpty()) {
+            return null;
+        }
+
+        String normalizedName = normalize(name);
+        Product exact = nameIndex.get(normalizedName);
+        if (exact != null) {
+            return exact;
+        }
+
+        Set<String> queryTokens = tokenize(normalizedName);
+        if (queryTokens.isEmpty()) {
+            return null;
+        }
+
+        for (Map.Entry<String, Product> entry : nameIndex.entrySet()) {
+            Set<String> productTokens = tokenize(entry.getKey());
+            if (!Collections.disjoint(queryTokens, productTokens)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private String normalize(String input) {
+        if (input == null) return "";
+        return input.trim().toLowerCase().replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ");
+    }
+
+    private Set<String> tokenize(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(input.split("\\s+"))
+                .filter(token -> !token.isEmpty())
+                .collect(Collectors.toSet());
     }
 }

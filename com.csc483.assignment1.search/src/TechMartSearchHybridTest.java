@@ -47,13 +47,39 @@ class SearchEngine {
         return null;
     }
 
+    /**
+     * Finds a product by its name using a sequential search.
+     * The search is case-insensitive.
+     *
+     */
     public static Product searchByName(Product[] products, String targetName) {
+        // Tokenize the target name for flexible matching
+        Set<String> targetTokens = tokenize(targetName);
         for (Product p : products) {
-            if (p != null && p.getProductName().equalsIgnoreCase(targetName)) {
-                return p;
+            if (p != null) {
+                // Tokenize the product name and check for any matching tokens
+                Set<String> productTokens = tokenize(p.getProductName());
+                for (String token : targetTokens) {
+                    if (productTokens.contains(token)) {
+                        return p;
+                    }
+                }
             }
         }
         return null;
+    }
+
+    /**
+     * Tokenizes a string into a set of lowercase words, ignoring punctuation and extra spaces.
+     * This enables partial matching in searches.
+     */
+    public static Set<String> tokenize(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return new HashSet<>();
+        }
+        // Split by whitespace and punctuation, convert to lowercase, and collect unique tokens
+        String[] words = text.toLowerCase().replaceAll("[^a-zA-Z0-9\\s]", "").split("\\s+");
+        return new HashSet<>(Arrays.asList(words));
     }
 }
 
